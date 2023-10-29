@@ -76,7 +76,7 @@ class ControlNet(nn.Module):
             disable_middle_self_attn=False,
             use_linear_in_transformer=False,
     ):
-        super().__init__()
+        super().__init__()   # todo
         if use_spatial_transformer:
             assert context_dim is not None, 'Fool!! You forgot to include the dimension of your cross-attention conditioning...'
 
@@ -144,7 +144,7 @@ class ControlNet(nn.Module):
         )
         self.zero_convs = nn.ModuleList([self.make_zero_conv(model_channels)])
 
-        self.input_hint_block = TimestepEmbedSequential(
+        self.input_hint_block = TimestepEmbedSequential(    # make input the same size as latent (64x64 in paper)
             conv_nd(dims, hint_channels, 16, 3, padding=1),
             nn.SiLU(),
             conv_nd(dims, 16, 16, 3, padding=1),
@@ -285,11 +285,11 @@ class ControlNet(nn.Module):
         t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
         emb = self.time_embed(t_emb)
 
-        guided_hint = self.input_hint_block(hint, emb, context)
+        guided_hint = self.input_hint_block(hint, emb, context)  # embedding
 
         outs = []
 
-        h = x.type(self.dtype)
+        h = x.type(self.dtype)  # make the same type
         for module, zero_conv in zip(self.input_blocks, self.zero_convs):
             if guided_hint is not None:
                 h = module(h, emb, context)
@@ -307,10 +307,11 @@ class ControlNet(nn.Module):
 
 class ControlLDM(LatentDiffusion):
 
-    def __init__(self, control_stage_config, control_key, only_mid_control, *args, **kwargs):
+    def __init__(self, control_stage_config, control_key1, control_key2, only_mid_control, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.control_model = instantiate_from_config(control_stage_config)
-        self.control_key = control_key
+        self.control_key1 = control_key1
+        self.control_key2 = control_key2
         self.only_mid_control = only_mid_control
         self.control_scales = [1.0] * 13
 
