@@ -320,7 +320,7 @@ class ControlLDM(LatentDiffusion):
     @torch.no_grad()
     def get_input(self, batch, k, bs=None, *args, **kwargs):
         x, c = super().get_input(batch, self.first_stage_key, *args, **kwargs)
-        control = torch.cat((batch[self.control_key1], batch[self.control_key2]), axis=0)
+        control = torch.cat((batch[self.control_key1], batch[self.control_key2]), dim=0)
         if bs is not None:
             control = control[:bs]
         control = control.to(self.device)
