@@ -286,6 +286,8 @@ class ControlNet(nn.Module):
         emb = self.time_embed(t_emb)
 
         guided_hint = self.input_hint_block(hint, emb, context)  # embedding
+        B = int(guided_hint.shape[0]/2)
+        guided_hint = torch.add(guided_hint[:B][:][:][:], guided_hint[B:][:][:][:])
 
         outs = []
 
@@ -318,7 +320,7 @@ class ControlLDM(LatentDiffusion):
     @torch.no_grad()
     def get_input(self, batch, k, bs=None, *args, **kwargs):
         x, c = super().get_input(batch, self.first_stage_key, *args, **kwargs)
-        control = batch[self.control_key]
+        control = torch.cat((batch[self.control_key1], batch[self.control_key2]), axis=0)
         if bs is not None:
             control = control[:bs]
         control = control.to(self.device)
