@@ -1,4 +1,4 @@
-name: control
+name: ControlNet
 channels:
   - pytorch
   - defaults
